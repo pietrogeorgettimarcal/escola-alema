@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escola de Alemão Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1a;
+        }
+        .german-gradient {
+            background: linear-gradient(90deg, #000000 33.3%, #DD0000 33.3%, #DD0000 66.6%, #FFCC00 66.6%);
+        }
+        .highlight-word, .dict-word-de:hover {
+            background-color: #FFCC00;
+            color: #000000;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease-in-out;
+        }
+        .difficulty-btn, .nav-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .difficulty-btn.selected {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+        }
+        .nav-btn.active {
+            background-color: #FFCC00;
+            color: #000;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d2d2d;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFCC00;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ddb000;
+        }
+        .test-question-correct {
+            border-left: 4px solid #22c55e; /* green-500 */
+        }
+        .test-question-incorrect {
+            border-left: 4px solid #ef4444; /* red-500 */
+        }
+        .img-loading {
+            background-color: #374151;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            50% {
+                opacity: .5;
+            }
+        }
+    </style>
+</head>
+<body class="text-white">
+
+    <header class="p-4 shadow-md bg-gray-900 sticky top-0 z-10">
+        <div class="container mx-auto flex flex-col items-center justify-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-center text-yellow-400">Escola de Alemão Online</h1>
+            <p class="text-center text-lg text-gray-300 mt-2">Sua jornada para a fluência começa aqui.</p>
+        </div>
+        <div class="w-full h-2 german-gradient mt-4"></div>
+        <nav class="container mx-auto mt-4">
+            <div class="flex justify-center bg-gray-800 rounded-lg p-1 space-x-1 flex-wrap">
+                <button class="nav-btn flex-1 p-3 font-bold rounded-md" data-page="inicio">Início</button>
+                <button class="nav-btn flex-1 p-3 font-bold rounded-md" data-page="dicionario">Dicionário</button>
+                <button class="nav-btn flex-1 p-3 font-bold rounded-md" data-page="tradutor">Tradutor</button>
+                <button class="nav-btn flex-1 p-3 font-bold rounded-md" data-page="desafios">Desafio Rápido</button>
+                <button class="nav-btn flex-1 p-3 font-bold rounded-md" data-page="provas">Provas Diárias</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <!-- Página Inicial -->
+        <div id="page-inicio" class="page space-y-8">
+            <section class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                 <h2 class="text-3xl font-bold mb-6 text-center border-b-2 border-red-500 pb-2">História e Curiosidade do Dia</h2>
+                 <div id="daily-content-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <!-- Conteúdo diário (texto e imagens) será injetado aqui -->
+                 </div>
+            </section>
+            
+            <section class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                <h2 class="text-3xl font-bold mb-6 text-center border-b-2 border-yellow-400 pb-2">Lição do Dia</h2>
+                <div id="lesson-container"></div>
+            </section>
+        </div>
+
+        <!-- Página do Dicionário -->
+        <div id="page-dicionario" class="page">
+             <section class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                <h2 class="text-3xl font-bold mb-6 text-center border-b-2 border-yellow-400 pb-2">Dicionário Alemão-Português</h2>
+                <input type="text" id="dict-search" class="w-full p-3 bg-gray-900 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-6" placeholder="Buscar palavra...">
+                <div id="dict-container" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                    <!-- Conteúdo do dicionário -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Página do Tradutor -->
+        <div id="page-tradutor" class="page">
+            <section class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                <h2 class="text-3xl font-bold mb-6 text-center border-b-2 border-red-500 pb-2">Ferramentas de Estudo</h2>
+                <!-- PT -> DE -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold mb-4 text-yellow-400">Português para Alemão</h3>
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <textarea id="pt-input" class="w-full h-24 p-3 bg-gray-900 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Digite o texto em português..."></textarea>
+                        <button id="translate-to-de" class="mt-4 w-full bg-black hover:bg-gray-900 text-yellow-400 font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center justify-center">Traduzir para Alemão <svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></button>
+                    </div>
+                    <div id="de-output-container" class="mt-4 p-4 bg-gray-900 rounded-lg hidden"><div class="flex items-start space-x-4">
+                        <div class="w-24 h-24 rounded-full border-4 border-yellow-400 overflow-hidden flex-shrink-0" aria-label="Bandeira da Alemanha">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" class="w-full h-full">
+                                <rect width="5" height="1" y="0" fill="#000000"/>
+                                <rect width="5" height="1" y="1" fill="#DD0000"/>
+                                <rect width="5" height="1" y="2" fill="#FFCC00"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold text-lg text-yellow-400">Tradução Alemã:</p>
+                            <div class="flex items-center space-x-2">
+                                <p id="de-output-text" class="flex-1 text-lg min-h-[50px] bg-gray-800 p-3 rounded-md"></p>
+                                <button id="speak-de-btn" title="Ouvir tradução" class="hidden p-3 bg-yellow-500 text-black rounded-full hover:bg-yellow-400 transition-transform transform hover:scale-110">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                                </button>
+                            </div>
+                            <div id="de-loader" class="text-center p-4 hidden">Traduzindo...</div>
+                        </div></div></div>
+                </div>
+                <!-- DE -> PT -->
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-red-500">Alemão para Português</h3>
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <textarea id="de-input" class="w-full h-24 p-3 bg-gray-900 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Geben Sie den Text auf Deutsch ein..."></textarea>
+                        <button id="translate-to-pt" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center justify-center">Traduzir para Português <svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></button>
+                    </div>
+                    <div id="pt-output-container" class="mt-4 p-4 bg-gray-900 rounded-lg hidden"><div class="flex items-start space-x-4">
+                        <div class="w-24 h-24 rounded-full border-4 border-green-500 overflow-hidden flex-shrink-0" aria-label="Bandeira do Brasil">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 7" class="w-full h-full">
+                                <rect width="10" height="7" fill="#009c3b"/>
+                                <path d="M5 0.5 L9.5 3.5 L5 6.5 L0.5 3.5 Z" fill="#ffdf00"/>
+                                <circle cx="5" cy="3.5" r="1.75" fill="#002776"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold text-lg text-green-400">Tradução para Português:</p>
+                            <div class="flex items-center space-x-2">
+                                <p id="pt-output-text" class="flex-1 text-lg min-h-[50px] bg-gray-800 p-3 rounded-md"></p>
+                                <button id="speak-pt-btn" title="Ouvir tradução" class="hidden p-3 bg-green-500 text-white rounded-full hover:bg-green-400 transition-transform transform hover:scale-110">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                                </button>
+                            </div>
+                            <div id="pt-loader" class="text-center p-4 hidden">Traduzindo...</div>
+                        </div></div></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Página de Desafios Rápidos -->
+        <div id="page-desafios" class="page">
+            <section class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                <h2 class="text-3xl font-bold mb-2 text-center border-b-2 border-gray-500 pb-2">Desafio Rápido da Hora</h2>
+                <div id="quick-challenge-attempts" class="text-center text-gray-400 font-bold my-2"></div>
+                <div id="challenge-timer" class="text-center text-yellow-400 font-bold my-4 text-lg"></div>
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-center mb-3">Selecione a Dificuldade</h3>
+                    <div id="difficulty-selector" class="grid grid-cols-3 gap-2">
+                        <button data-difficulty="facil" class="difficulty-btn p-3 bg-green-700 hover:bg-green-600 rounded-lg font-bold">Fácil</button>
+                        <button data-difficulty="medio" class="difficulty-btn p-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg font-bold">Médio</button>
+                        <button data-difficulty="dificil" class="difficulty-btn p-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold">Difícil</button>
+                    </div>
+                </div>
+                <div id="quiz-container" class="bg-gray-700 p-6 rounded-lg min-h-[200px]"></div>
+                <div id="feedback-container" class="mt-4 p-3 text-center rounded-lg font-bold"></div>
+            </section>
+        </div>
+
+        <!-- Página de Provas Diárias -->
+        <div id="page-provas" class="page">
+            <section class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                 <div id="test-selection-container">
+                    <h2 class="text-3xl font-bold mb-6 text-center border-b-2 border-yellow-400 pb-2">Provas de Proficiência Diárias</h2>
+                    <div id="daily-test-timer" class="text-center text-red-500 font-bold bg-gray-900 p-3 rounded-lg my-4 text-lg"></div>
+                    <p class="text-center text-gray-400 mb-8">As provas mudam todos os dias à meia-noite. Você pode refazê-las quantas vezes quiser.</p>
+                    <div id="test-selection-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Os cards de seleção de provas serão injetados aqui -->
+                    </div>
+                </div>
+                <div id="active-test-container" class="hidden">
+                    <!-- A prova ativa será injetada aqui -->
+                </div>
+            </section>
+        </div>
+
+    </main>
+    
+    <!-- Modal para Notificação -->
+    <div id="notification-modal" class="fixed top-24 right-5 p-4 rounded-lg shadow-lg text-white z-50 transition-transform transform translate-x-full bg-red-600">
+        <p id="notification-message"></p>
+    </div>
+
+    <script>
+        // --- INICIALIZAÇÃO E ESTADO GLOBAL ---
+        let isTranslating = false;
+        let currentDifficulty = 'facil';
+        let challengeTimerInterval = null;
+        let dailyTestTimerInterval = null;
+        let quickChallengeAttempts = 3;
+
+        // --- DEFINIÇÃO DOS DADOS GLOBAIS (LIÇÕES, DICIONÁRIO, ETC.) ---
+        const dailyTopics = [
+             { title: "O Portão de Brandemburgo: Símbolo da Reunificação", text: "O Portão de Brandemburgo é muito mais que um monumento; é o coração pulsante da história alemã. Originalmente construído no final do século 18 como um arco do triunfo para o Rei Frederico Guilherme II da Prússia, ele testemunhou a marcha triunfal de Napoleão, sobreviveu aos bombardeios da Segunda Guerra Mundial e se tornou um símbolo sombrio da divisão durante a Guerra Fria. O Muro de Berlim passava diretamente ao seu lado, isolando-o em terra de ninguém e tornando-o um ícone inacessível da separação entre o Oriente e o Ocidente. A imagem de milhares de pessoas celebrando sobre o muro em frente ao portão em 1989 é um dos momentos mais poderosos da história recente. Hoje, ele é palco de celebrações de Ano Novo, festivais e um lembrete constante da resiliência e da unidade alemã.", imageTitles: ["Brandenburg Gate Berlin at night", "Quadriga statue on Brandenburg Gate", "historic fall of Berlin Wall"] },
+            { title: "A Floresta Negra (Schwarzwald): Mitos e Tradições", text: "Mergulhe na mística Floresta Negra (Schwarzwald), uma vasta cadeia de montanhas arborizadas em Baden-Württemberg. Suas paisagens densas e muitas vezes enevoadas foram o cenário perfeito para os contos de fadas sombrios e encantadores dos Irmãos Grimm, como 'Hänsel e Gretel'. A região é mundialmente famosa por ser o berço do relógio de cuco, uma tradição artesanal que remonta ao século 18. Além disso, delicie-se com a culinária local, especialmente a autêntica Schwarzwälder Kirschtorte (Bolo Floresta Negra), uma sobremesa rica em chocolate, cerejas e Kirschwasser (destilado de cereja). Suas trilhas para caminhadas, como a Westweg, oferecem vistas espetaculares de vales verdejantes e vilarejos pitorescos.", imageTitles: ["dense dark Black Forest trees Germany", "traditional German Cuckoo Clock", "slice of Black Forest Cake Schwarzwälder Kirschtorte"] },
+            { title: "O Castelo de Neuschwanstein: O Sonho de um Rei", text: "O Castelo de Neuschwanstein parece ter sido arrancado diretamente de um conto de fadas, e por um bom motivo. Foi a criação visionária, e um tanto excêntrica, do Rei Ludwig II da Baviera, conhecido como o 'Rei Louco'. Ludwig II construiu este castelo não para fins de defesa, mas como um refúgio romântico e uma homenagem grandiosa ao seu ídolo, o compositor Richard Wagner. O interior é tão deslumbrante quanto o exterior, com salas que retratam cenas das óperas de Wagner. Apesar de sua aparência medieval, o castelo era surpreendentemente moderno para a época, com aquecimento central, água corrente e até telefones. Sua silhueta icônica, com torres brancas pontiagudas contra os Alpes da Baviera, serviu de inspiração direta para o Castelo da Bela Adormida na Disneylândia.", imageTitles: ["Neuschwanstein Castle Bavarian Alps", "King Ludwig II Neuschwanstein interior", "Neuschwanstein Castle covered in snow"] },
+            { title: "A Rota Romântica: Uma Viagem no Tempo", text: "A Rota Romântica (Romantische Straße) é uma jornada inesquecível pelo coração da Baviera e de Baden-Württemberg. O nome 'Romântica' refere-se ao sentimento e à nostalgia evocados por suas paisagens e cidades históricas, que parecem congeladas no tempo. Estendendo-se por cerca de 400 km, de Würzburg a Füssen, a rota serpenteia por cenários de vinhedos, campos verdejantes e os majestosos Alpes. O verdadeiro encanto está em suas paradas: cidades muradas como a deslumbrante Rothenburg ob der Tauber, a charmosa Dinkelsbühl e o centro histórico de Augsburg, uma das cidades mais antigas da Alemanha. A rota culmina no espetacular Castelo de Neuschwanstein, proporcionando um final grandioso para uma viagem que é, de fato, um mergulho profundo na história e na cultura alemã.", imageTitles: ["Rothenburg ob der Tauber Plönlein", "Würzburg Residence palace Romantic Road", "Füssen old town with Alps"] }
+        ];
+        const lessons = [
+            { title: "Saudações (Grüße) e Despedidas", explanation: "Cumprimentar e se despedir são essenciais. O alemão diferencia situações formais e informais.", examples: [{ pt: "Oi / Olá (informal)", de: "Hallo" }, { pt: "Bom dia", de: "Guten Morgen" }, { pt: "Boa tarde / Bom dia", de: "Guten Tag" }, { pt: "Boa noite", de: "Guten Abend" }, { pt: "Tchau (informal)", de: "Tschüss" }, { pt: "Adeus (formal)", de: "Auf Wiedersehen" }] },
+            { title: "Os Artigos Definidos: Der, Die, Das", explanation: "Em alemão, os substantivos têm gênero: masculino (der), feminino (die) ou neutro (das). É crucial aprender o artigo junto com a palavra, pois ele muda dependendo do caso gramatical.", examples: [{ pt: "O homem", de: "Der Mann" }, { pt: "A mulher", de: "Die Frau" }, { pt: "A criança", de: "Das Kind" }, { pt: "O sol", de: "Die Sonne" }, { pt: "O livro", de: "Das Buch" }, { pt: "A mesa", de: "Der Tisch" }] },
+            { title: "Apresentações (Vorstellungen)", explanation: "Aprenda a dizer seu nome, de onde você é e a perguntar o mesmo para outras pessoas. Note a diferença entre formal (Sie) e informal (du).", examples: [{ pt: "Meu nome é...", de: "Mein Name ist..." }, { pt: "Eu me chamo...", de: "Ich heiße..." }, { pt: "Eu sou de...", de: "Ich komme aus..." }, { pt: "Como você se chama? (informal)", de: "Wie heißt du?" }, { pt: "Como o senhor(a) se chama? (formal)", de: "Wie heißen Sie?" }] },
+            { title: "Verbo 'Sein' (Ser/Estar) no Presente", explanation: "O verbo 'sein' é um dos mais importantes e é irregular. Sua conjugação é fundamental para construir frases básicas.", examples: [{ pt: "Eu sou/estou", de: "Ich bin" }, { pt: "Você é/está (informal)", de: "Du bist" }, { pt: "Ele/Ela é/está", de: "Er/Sie/Es ist" }, { pt: "Nós somos/estamos", de: "Wir sind" }, { pt: "Vocês são/estão", de: "Ihr seid" }, { pt: "Eles/Elas/Sr(a) são/estão", de: "sie/Sie sind" }] },
+        ];
+        const dictionary = { "Saudações e Despedidas": [{de:"Hallo", pt:"Olá"}, {de:"Guten Morgen", pt:"Bom dia"}, {de:"Guten Tag", pt:"Boa tarde"}, {de:"Guten Abend", pt:"Boa noite"}, {de:"Gute Nacht", pt:"Boa noite (ao ir dormir)"}, {de:"Tschüss", pt:"Tchau (informal)"}, {de:"Auf Wiedersehen", pt:"Adeus (formal)"}, {de:"Bis bald", pt:"Até breve"}, {de:"Bis später", pt:"Até mais tarde"}], "Essencial": [{de:"Ja", pt:"Sim"}, {de:"Nein", pt:"Não"}, {de:"Bitte", pt:"Por favor / De nada"}, {de:"Danke", pt:"Obrigado(a)"}, {de:"Entschuldigung", pt:"Desculpe / Com licença"}, {de:"Hilfe", pt:"Ajuda / Socorro"}, {de:"Vielleicht", pt:"Talvez"}, {de:"Genau", pt:"Exato"}], "Pessoas e Família": [{de:"Mann", pt:"Homem"}, {de:"Frau", pt:"Mulher"}, {de:"Kind", pt:"Criança"}, {de:"Freund(in)", pt:"Amigo(a)"}, {de:"Familie", pt:"Família"}, {de:"Vater", pt:"Pai"}, {de:"Mutter", pt:"Mãe"}, {de:"Sohn", pt:"Filho"}, {de:"Tochter", pt:"Filha"}, {de:"Bruder", pt:"Irmão"}, {de:"Schwester", pt:"Irmã"}], "Comida e Bebida": [{de:"Wasser", pt:"Água"}, {de:"Brot", pt:"Pão"}, {de:"Käse", pt:"Queijo"}, {de:"Apfel", pt:"Maçã"}, {de:"Bier", pt:"Cerveja"}, {de:"Kaffee", pt:"Café"}, {de:"Wein", pt:"Vinho"}, {de:"Essen", pt:"Comida / Comer"}, {de:"Frühstück", pt:"Café da manhã"}, {de:"Mittagessen", pt:"Almoço"}, {de:"Abendessen", pt:"Jantar"}], "Lugares": [{de:"Haus", pt:"Casa"}, {de:"Wohnung", pt:"Apartamento"}, {de:"Stadt", pt:"Cidade"}, {de:"Land", pt:"País / Campo"}, {de:"Bahnhof", pt:"Estação de trem"}, {de:"Flughafen", pt:"Aeroporto"}, {de:"Restaurant", pt:"Restaurante"}, {de:"Hotel", pt:"Hotel"}, {de:"Supermarkt", pt:"Supermercado"}, {de:"Krankenhaus", pt:"Hospital"}, {de:"Schule", pt:"Escola"}, {de:"Toilette", pt:"Banheiro"}], "Verbos Comuns": [{de:"sein", pt:"ser, estar"}, {de:"haben", pt:"ter"}, {de:"werden", pt:"tornar-se, vir a ser"}, {de:"können", pt:"poder, saber (habilidade)"}, {de:"müssen", pt:"ter que, dever (obrigação)"}, {de:"wollen", pt:"querer"}, {de:"gehen", pt:"ir"}, {de:"kommen", pt:"vir"}, {de:"sprechen", pt:"falar"}, {de:"sagen", pt:"dizer"}, {de:"essen", pt:"comer"}, {de:"trinken", pt:"beber"}, {de:"sehen", pt:"ver"}, {de:"hören", pt:"ouvir"}, {de:"lesen", pt:"ler"}, {de:"schreiben", pt:"escrever"}, {de:"arbeiten", pt:"trabalhar"}, {de:"lernen", pt:"aprender"}, {de:"kaufen", pt:"comprar"}, {de:"schlafen", pt:"dormir"}, {de:"machen", pt:"fazer"}], "Adjetivos": [{de:"gut", pt:"bom"}, {de:"schlecht", pt:"ruim"}, {de:"groß", pt:"grande"}, {de:"klein", pt:"pequeno"}, {de:"neu", pt:"novo"}, {de:"alt", pt:"velho"}, {de:"schön", pt:"bonito"}, {de:"hässlich", pt:"feio"}, {de:"kalt", pt:"frio"}, {de:"warm", pt:"quente/morno"}, {de:"heiß", pt:"quente (muito)"}, {de:"schnell", pt:"rápido"}, {de:"langsam", pt:"lento"}, {de:"richtig", pt:"certo"}, {de:"falsch", pt:"errado"}], "Abreviações Comuns": [{de:"z.B.", pt:"zum Beispiel (por exemplo)"}, {de:"usw.", pt:"und so weiter (etc., e assim por diante)"}, {de:"d.h.", pt:"das heißt (isto é)"}, {de:"bzw.", pt:"beziehungsweise (ou, respectivamente)"}, {de:"ca.", pt:"circa (aproximadamente)"}, {de:"u.a.", pt:"unter anderem (entre outros)"}] };
+        const quizzesByDifficulty = {
+            facil: [ { question: "Traduza 'bom dia'", answer: "Guten Morgen", hint: "Começa com 'Guten' e se refere à parte da manhã." }, { question: "Artigo para 'Mädchen' (menina)?", options: ['der', 'die', 'das'], answer: 'das', hint: "Muitos diminutivos em alemão são neutros." }, { question: "Traduza 'obrigado'", answer: "danke", hint: "É uma palavra curta e muito comum." }, { question: "O que significa 'Wasser'?", options: ['Fogo', 'Terra', 'Água'], answer: 'Água', hint: "É uma bebida essencial." }, { question: "Artigo para 'Mann' (homem)?", options: ['der', 'die', 'das'], answer: 'der', hint: "Refere-se a uma pessoa do sexo masculino." } ],
+            medio: [ { question: "Complete: Ich _____ aus Brasilien.", answer: "komme", hint: "Verbo 'vir' em primeira pessoa." }, { question: "Plural de 'Apfel' (maçã)?", options: ['Apfeln', 'Äpfel', 'Apfels'], answer: 'Äpfel', hint: "A vogal 'a' geralmente se torna 'ä' no plural (Umlaut)." }, { question: "Como se conjuga 'sein' para 'ich'?", answer: "bin", hint: "'Eu sou/estou' em alemão." }, { question: "Traduza: 'Onde fica o banheiro?'", answer: "Wo ist die Toilette?", hint: "Começa com a palavra interrogativa para 'onde'." }, { question: "Conjugue 'haben' (ter) para 'er/sie/es'.", answer: "hat", hint: "Terceira pessoa do singular do verbo 'ter'." } ],
+            dificil: [ { question: "Traduza: 'Eu comi uma maçã.' (Perfekt)", answer: "Ich habe einen Apfel gegessen", hint: "O tempo Perfekt usa 'haben' ou 'sein' + particípio passado." }, { question: "Qual o caso de 'dem Mann' na frase 'Ich helfe dem Mann'?", options: ['Nominativo', 'Acusativo', 'Dativo'], answer: 'Dativo', hint: "O verbo 'helfen' (ajudar) rege este caso." }, { question: "Qual o passado de 'Ich gehe' (Präteritum)?", answer: "Ich ging", hint: "É uma forma irregular do verbo 'ir'." }, { question: "Traduza a frase: 'Se eu tivesse tempo, eu viajaria.' (Konjunktiv II)", answer: "Wenn ich Zeit hätte, würde ich reisen", hint: "Use 'hätte' (forma subjuntiva de haben) e 'würde' + infinitivo." }, { question: "Qual adjetivo completa 'ein _____ Auto' (neutro, acusativo)?", options: ['guter', 'gutes', 'guten'], answer: 'gutes', hint: "A declinação de adjetivos após artigos indefinidos no acusativo neutro termina em '-es'." } ]
+        };
+        const testsByTopic = {
+            artigos: {
+                facil: [ { question: "Qual o artigo de 'Apfel' (maçã)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Frau' (mulher)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Auto' (carro)?", options: ['der', 'die', 'das'], answer: 'das' }, { question: "Qual o artigo de 'Tisch' (mesa)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Sonne' (sol)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Buch' (livro)?", options: ['der', 'die', 'das'], answer: 'das' }, { question: "Qual o artigo de 'Stuhl' (cadeira)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Lampe' (lâmpada)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Fenster' (janela)?", options: ['der', 'die', 'das'], answer: 'das' }, { question: "Qual o artigo de 'Hund' (cachorro)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Katze' (gato)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Kind' (criança)?", options: ['der', 'die', 'das'], answer: 'das' } ],
+                medio: [ { question: "Qual o artigo de 'Flughafen' (aeroporto)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Universität' (universidade)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Ergebnis' (resultado)?", options: ['der', 'die', 'das'], answer: 'das' }, { question: "Qual o artigo de 'Schlüssel' (chave)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Regierung' (governo)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Gespräch' (conversa)?", options: ['der', 'die', 'das'], answer: 'das' }, { question: "Qual o artigo de 'Monat' (mês)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Antwort' (resposta)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Gebäude' (edifício)?", options: ['der', 'die', 'das'], answer: 'das' }, { question: "Qual o artigo de 'Lehrer' (professor)?", options: ['der', 'die', 'das'], answer: 'der' } ],
+                dificil: [ { question: "Qual o artigo de 'Moment' (momento)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Schwierigkeit' (dificuldade)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Märchen' (conto de fadas)?", options: ['der', 'die', 'das'], answer: 'das' }, { question: "Qual o artigo de 'Geist' (espírito, mente)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Vergangenheit' (passado)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Verhältnis' (relacionamento)?", options: ['der', 'die', 'das'], answer: 'das' }, { question: "Qual o artigo de 'Wille' (vontade)?", options: ['der', 'die', 'das'], answer: 'der' }, { question: "Qual o artigo de 'Möglichkeit' (possibilidade)?", options: ['der', 'die', 'das'], answer: 'die' }, { question: "Qual o artigo de 'Geheimnis' (segredo)?", options: ['der', 'die', 'das'], answer: 'das' }, { question: "Qual o artigo de 'Frieden' (paz)?", options: ['der', 'die', 'das'], answer: 'der' } ]
+            },
+            conjugacao: {
+                facil: [ { question: "Conjugue 'machen' (fazer) para 'ich'", options: ['mache', 'machst', 'macht'], answer: 'mache' }, { question: "Conjugue 'lernen' (aprender) para 'du'", options: ['lerne', 'lernst', 'lernt'], answer: 'lernst' }, { question: "Conjugue 'wohnen' (morar) para 'er'", options: ['wohne', 'wohnst', 'wohnt'], answer: 'wohnt' }, { question: "Conjugue 'spielen' (brincar/jogar) para 'wir'", options: ['spiele', 'spielt', 'spielen'], answer: 'spielen' }, { question: "Conjugue 'kaufen' (comprar) para 'ihr'", options: ['kaufe', 'kauft', 'kaufen'], answer: 'kauft' }, { question: "Conjugue 'sagen' (dizer) para 'sie/Sie'", options: ['sage', 'sagt', 'sagen'], answer: 'sagen' }, { question: "Conjugue 'fragen' (perguntar) para 'ich'", options: ['frage', 'fragst', 'fragt'], answer: 'frage' }, { question: "Conjugue 'arbeiten' (trabalhar) para 'du'", options: ['arbeite', 'arbeitest', 'arbeitet'], answer: 'arbeitest' }, { question: "Conjugue 'brauchen' (precisar) para 'es'", options: ['brauche', 'brauchst', 'braucht'], answer: 'braucht' }, { question: "Conjugue 'hören' (ouvir) para 'wir'", options: ['höre', 'hört', 'hören'], answer: 'hören' } ],
+                medio: [ { question: "Conjugue 'sprechen' (falar) para 'du'", options: ['spreche', 'sprichst', 'sprecht'], answer: 'sprichst' }, { question: "Conjugue 'sehen' (ver) para 'er'", options: ['sehe', 'siehst', 'sieht'], answer: 'sieht' }, { question: "Conjugue 'lesen' (ler) para 'du'", options: ['lese', 'liest', 'lest'], answer: 'liest' }, { question: "Conjugue 'geben' (dar) para 'er'", options: ['gebe', 'gibst', 'gibt'], answer: 'gibt' }, { question: "Conjugue 'nehmen' (pegar) para 'du'", options: ['nehme', 'nimmst', 'nehmt'], answer: 'nimmst' }, { question: "Conjugue 'fahren' (dirigir/ir) para 'er'", options: ['fahre', 'fährst', 'fährt'], answer: 'fährt' }, { question: "Conjugue 'wissen' (saber) para 'ich'", options: ['weiß', 'weißt', 'weiß'], answer: 'weiß' }, { question: "Conjugue 'können' (poder) para 'ich'", options: ['kann', 'kannst', 'können'], answer: 'kann' }, { question: "Conjugue 'wollen' (querer) para 'er'", options: ['will', 'willst', 'wollen'], answer: 'will' }, { question: "Conjugue 'müssen' (dever/ter que) para 'ich'", options: ['muss', 'musst', 'müssen'], answer: 'muss' } ],
+                dificil: [ { question: "Qual o Perfekt de 'ich gehe' (eu vou)?", options: ['ich habe gegangen', 'ich bin gegangen', 'ich bin gegeht'], answer: 'ich bin gegangen' }, { question: "Qual o Perfekt de 'er schreibt' (ele escreve)?", options: ['er hat geschrieben', 'er ist geschrieben', 'er hat geschreibt'], answer: 'er hat geschrieben' }, { question: "Qual o Präteritum de 'wir sehen' (nós vemos)?", options: ['wir siehen', 'wir sahen', 'wir sehten'], answer: 'wir sahen' }, { question: "Qual o Präteritum de 'du sprichst' (você fala)?", options: ['du sprachst', 'du sprichst', 'du sprachest'], answer: 'du sprachst' }, { question: "Qual o Konjunktiv II de 'ich habe' (eu tenho)?", options: ['ich hätte', 'ich habe', 'ich hub'], answer: 'ich hätte' }, { question: "Qual o Konjunktiv II de 'er ist' (ele é)?", options: ['er sei', 'er wäre', 'er ist'], answer: 'er wäre' }, { question: "Qual o Partizip II de 'trinken' (beber)?", options: ['getrinkt', 'trunken', 'getrunken'], answer: 'getrunken' }, { question: "Qual o Partizip II de 'finden' (encontrar)?", options: ['gefunden', 'findet', 'gefundenen'], answer: 'gefunden' }, { question: "Qual o Präteritum de 'ihr esst' (vocês comem)?", options: ['ihr aßt', 'ihr esstet', 'ihr gessen'], answer: 'ihr aßt' }, { question: "Qual o Perfekt de 'sie fliegen' (eles voam)?", options: ['sie haben gefliegt', 'sie sind geflogen', 'sie haben geflogen'], answer: 'sie sind geflogen' } ]
+            },
+            vocabulario: {
+                facil: [ { question: "O que significa 'rot'?", options: ['Azul', 'Vermelho', 'Verde'], answer: 'Vermelho' }, { question: "Traduza 'Woche'", options: ['Dia', 'Mês', 'Semana'], answer: 'Semana' }, { question: "O que é 'Milch'?", options: ['Pão', 'Leite', 'Água'], answer: 'Leite' }, { question: "Traduza 'klein'", options: ['Grande', 'Pequeno', 'Alto'], answer: 'Pequeno' }, { question: "O que significa 'Geld'?", options: ['Dinheiro', 'Tempo', 'Comida'], answer: 'Dinheiro' } ],
+                medio: [ { question: "O que significa 'gefährlich'?", options: ['Seguro', 'Perigoso', 'Rápido'], answer: 'Perigoso' }, { question: "Traduza 'Gabel'", options: ['Faca', 'Colher', 'Garfo'], answer: 'Garfo' }, { question: "O que é um 'Regenschirm'?", options: ['Guarda-chuva', 'Óculos de sol', 'Chapéu'], answer: 'Guarda-chuva' }, { question: "Traduza 'versuchen'", options: ['Conseguir', 'Tentar', 'Esquecer'], answer: 'Tentar' }, { question: "O que significa 'Umwelt'?", options: ['Cidade', 'Meio ambiente', 'País'], answer: 'Meio ambiente' } ],
+                dificil: [ { question: "O que significa 'entschlossen'?", options: ['Confuso', 'Determinado', 'Cansado'], answer: 'Determinado' }, { question: "Traduza 'Herausforderung'", options: ['Oportunidade', 'Problema', 'Desafio'], answer: 'Desafio' }, { question: "O que é 'Bewusstsein'?", options: ['Consciência', 'Conhecimento', 'Felicidade'], answer: 'Consciência' }, { question: "Traduza 'unterstützen'", options: ['Criticar', 'Apoiar', 'Ignorar'], answer: 'Apoiar' }, { question: "O que significa 'tatsächlich'?", options: ['Provavelmente', 'Talvez', 'De fato / Realmente'], answer: 'De fato / Realmente' } ]
+            },
+            historia: {
+                facil: [ { question: "Qual evento em 1989 é um símbolo da reunificação alemã?", options: ['A Copa do Mundo', 'A queda do Muro de Berlim', 'A eleição de Merkel'], answer: 'A queda do Muro de Berlim' }, { question: "Qual famoso compositor alemão nasceu em Bonn?", options: ['Bach', 'Mozart', 'Beethoven'], answer: 'Beethoven' }, { question: "Qual rio famoso atravessa muitas cidades alemãs, como Colônia?", options: ['Danúbio', 'Reno', 'Elba'], answer: 'Reno' }, { question: "A Oktoberfest é um famoso festival de qual cidade?", options: ['Berlim', 'Hamburgo', 'Munique'], answer: 'Munique' }, { question: "Qual carro é um ícone da indústria automobilística alemã?", options: ['Fusca (Käfer)', 'Fiat 500', 'Citroën 2CV'], answer: 'Fusca (Käfer)' } ],
+                medio: [ { question: "Quem foi o 'Chanceler de Ferro' que unificou a Alemanha em 1871?", options: ['Otto von Bismarck', 'Kaiser Wilhelm II', 'Konrad Adenauer'], answer: 'Otto von Bismarck' }, { question: "Qual movimento religioso foi iniciado por Martinho Lutero na Alemanha?", options: ['A Contrarreforma', 'O Iluminismo', 'A Reforma Protestante'], answer: 'A Reforma Protestante' }, { question: "Em qual cidade alemã ocorreram os julgamentos de crimes de guerra após a 2ª Guerra Mundial?", options: ['Berlim', 'Nuremberg', 'Munique'], answer: 'Nuremberg' }, { question: "A 'Bauhaus' foi uma famosa escola de que área?", options: ['Música', 'Medicina', 'Arte e Design'], answer: 'Arte e Design' }, { question: "Qual era a moeda da Alemanha Ocidental antes do Euro?", options: ['Reichsmark', 'Marco Alemão (Deutsche Mark)', 'Franco'], answer: 'Marco Alemão (Deutsche Mark)' } ],
+                dificil: [ { question: "O que foi a 'Liga Hanseática' na Idade Média?", options: ['Uma aliança militar', 'Uma aliança comercial de cidades', 'Uma ordem religiosa'], answer: 'Uma aliança comercial de cidades' }, { question: "Qual tratado em 1648 encerrou a Guerra dos Trinta Anos?", options: ['Tratado de Versalhes', 'Paz de Vestfália', 'Congresso de Viena'], answer: 'Paz de Vestfália' }, { question: "Quem foi o autor de 'A Montanha Mágica'?", options: ['Hermann Hesse', 'Günter Grass', 'Thomas Mann'], answer: 'Thomas Mann' }, { question: "O que foi o movimento literário 'Sturm und Drang'?", options: ['Tempestade e Ímpeto', 'Paz e Amor', 'Ordem e Progresso'], answer: 'Tempestade e Ímpeto' }, { question: "Qual filósofo, autor de 'Assim Falou Zaratustra', é uma figura central do pensamento alemão?", options: ['Kant', 'Hegel', 'Nietzsche'], answer: 'Nietzsche' } ]
+            }
+        };
+
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            loadInitialState();
+            
+            loadDailyContent();
+            loadLesson();
+            
+            setupChallengeTimer();
+            setupDailyTestTimer();
+            checkIfNewDay();
+            
+            changePage('inicio');
+        });
+
+        function setupEventListeners() {
+            document.querySelector('nav').addEventListener('click', (e) => e.target.matches('.nav-btn') && changePage(e.target.dataset.page));
+            document.getElementById('translate-to-de').addEventListener('click', () => handleTranslationRequest('pt-input', 'Português', 'Alemão', 'de-DE', 'de-output-container', 'de-output-text', 'de-loader'));
+            document.getElementById('translate-to-pt').addEventListener('click', () => handleTranslationRequest('de-input', 'Alemão', 'Português do Brasil', 'pt-BR', 'pt-output-container', 'pt-output-text', 'pt-loader'));
+            document.getElementById('difficulty-selector').addEventListener('click', handleDifficultyChange);
+            document.getElementById('dict-search').addEventListener('input', filterDictionary);
+            document.querySelectorAll('.page').forEach(page => {
+                if (page.id === 'page-provas') {
+                    new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                loadTestSelection(); 
+                            }
+                        });
+                    }).observe(page);
+                }
+            });
+        }
+
+        function loadInitialState() {
+            currentDifficulty = localStorage.getItem('germanSchoolDifficulty') || 'facil';
+            updateDifficultyButtons();
+            loadQuiz();
+            buildDictionary();
+        }
+        
+        // --- LÓGICA DE NAVEGAÇÃO E ATUALIZAÇÃO DIÁRIA ---
+        function changePage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.nav-btn[data-page="${pageId}"]`).classList.add('active');
+            if (pageId === 'provas') {
+                document.getElementById('test-selection-container').classList.remove('hidden');
+                document.getElementById('active-test-container').classList.add('hidden');
+                loadTestSelection(); 
+            }
+        }
+
+        function checkIfNewDay() {
+            const today = new Date().toDateString();
+            const lastUpdate = localStorage.getItem('lastUpdateDay');
+            if (today !== lastUpdate) {
+                loadDailyContent();
+                loadLesson();
+                localStorage.setItem('lastUpdateDay', today);
+            }
+        }
+        
+        // --- CONTEÚDO DA PÁGINA INICIAL ---
+        function loadImage(imageElement, title) {
+            const formattedTitle = encodeURIComponent(title);
+            imageElement.src = `https://source.unsplash.com/600x400/?${formattedTitle}`;
+            imageElement.onload = () => imageElement.classList.remove('img-loading');
+            imageElement.onerror = () => {
+                imageElement.src = `https://placehold.co/600x400/333/FFF?text=Imagem+Indisponível`;
+                imageElement.classList.remove('img-loading');
+            }
+        }
+
+        function loadDailyContent() {
+            const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const topic = dailyTopics[dayOfYear % dailyTopics.length];
+            const container = document.getElementById('daily-content-container');
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <h3 class="text-2xl font-semibold text-yellow-400">${topic.title}</h3>
+                    <p class="text-gray-300 leading-relaxed">${topic.text}</p>
+                </div>
+                <div class="space-y-4">
+                    <img id="daily-img-1" class="rounded-lg shadow-lg w-full h-auto object-cover img-loading aspect-video">
+                    <div class="grid grid-cols-2 gap-4">
+                        <img id="daily-img-2" class="rounded-lg shadow-md w-full h-auto object-cover img-loading aspect-video">
+                        <img id="daily-img-3" class="rounded-lg shadow-md w-full h-auto object-cover img-loading aspect-video">
+                    </div>
+                </div>`;
+            
+            loadImage(document.getElementById('daily-img-1'), topic.imageTitles[0]);
+            loadImage(document.getElementById('daily-img-2'), topic.imageTitles[1]);
+            loadImage(document.getElementById('daily-img-3'), topic.imageTitles[2]);
+        }
+        
+        // --- LÓGICA DAS LIÇÕES ---
+        function loadLesson() {
+            const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const lesson = lessons[dayOfYear % lessons.length];
+            const lessonContainer = document.getElementById('lesson-container');
+            let content = `<h3 class="text-2xl font-semibold mb-4 text-yellow-400">${lesson.title}</h3>`;
+            content += `<p class="mb-6 text-gray-300">${lesson.explanation}</p><div class="space-y-3">`;
+            lesson.examples.forEach(ex => {
+                content += `<div class="grid grid-cols-2 gap-4 items-center bg-gray-700 p-3 rounded-lg cursor-pointer hover:bg-gray-600 transition lesson-item" onclick="speak('${ex.de}', 'de-DE')">
+                                <p class="text-lg pointer-events-none">${ex.pt}</p>
+                                <div class="flex items-center justify-end pointer-events-none">
+                                    <p class="text-lg font-bold text-yellow-300 mr-4 lesson-text-de">${ex.de}</p>
+                                    <span class="text-yellow-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg></span>
+                                </div>
+                             </div>`;
+            });
+            content += `</div>`;
+            lessonContainer.innerHTML = content;
+        }
+        
+        // --- CRONÔMETROS ---
+        function setupChallengeTimer() { if (challengeTimerInterval) clearInterval(challengeTimerInterval); updateChallengeTimer(); challengeTimerInterval = setInterval(updateChallengeTimer, 1000); }
+        function updateChallengeTimer() { const now = new Date(); const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0); const diff = nextHour - now; const minutes = Math.floor((diff / 1000 / 60) % 60); const seconds = Math.floor((diff / 1000) % 60); const timerElement = document.getElementById('challenge-timer'); if (timerElement) timerElement.textContent = `Próximo desafio em: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; if (minutes <= 0 && seconds <= 1) { setTimeout(() => { if(document.getElementById('page-desafios').classList.contains('active')) loadQuiz(); }, 1000); } }
+        
+        function setupDailyTestTimer() { if (dailyTestTimerInterval) clearInterval(dailyTestTimerInterval); updateDailyTestTimer(); dailyTestTimerInterval = setInterval(updateDailyTestTimer, 1000); }
+        function updateDailyTestTimer() { const now = new Date(); const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1); const diff = tomorrow - now; const hours = Math.floor((diff / (1000 * 60 * 60)) % 24); const minutes = Math.floor((diff / 1000 / 60) % 60); const seconds = Math.floor((diff / 1000) % 60); const timerElement = document.getElementById('daily-test-timer'); if (timerElement) timerElement.textContent = `Novas provas em: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; }
+
+        function handleDifficultyChange(e) { if (e.target.tagName !== 'BUTTON') return; currentDifficulty = e.target.dataset.difficulty; localStorage.setItem('germanSchoolDifficulty', currentDifficulty); updateDifficultyButtons(); loadQuiz(); }
+        function updateDifficultyButtons() { document.querySelectorAll('.difficulty-btn').forEach(btn => { btn.classList.remove('selected', 'bg-green-500', 'bg-yellow-400', 'bg-red-500'); if (btn.dataset.difficulty === currentDifficulty) { btn.classList.add('selected'); if(currentDifficulty === 'facil') btn.classList.add('bg-green-500'); if(currentDifficulty === 'medio') btn.classList.add('bg-yellow-400'); if(currentDifficulty === 'dificil') btn.classList.add('bg-red-500'); } }); }
+        
+        // --- NOTIFICAÇÕES ---
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification-modal');
+            const messageElem = document.getElementById('notification-message');
+            messageElem.textContent = message;
+            notification.className = `fixed top-24 right-5 p-4 rounded-lg shadow-lg text-white z-50 transition-transform transform ${isError ? 'bg-red-600' : 'bg-blue-600'}`;
+            requestAnimationFrame(() => notification.classList.remove('translate-x-full'));
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // --- LÓGICA DE TRADUÇÃO E FALA ---
+        async function getTranslation(text, sourceLang, targetLang) {
+            // A instrução de sistema define o papel e as regras para a IA.
+            const systemInstruction = `Você é um tradutor profissional especializado em ${sourceLang} e ${targetLang}. Sua única tarefa é traduzir o texto fornecido. Responda APENAS com o texto traduzido, sem saudações, explicações ou qualquer texto adicional.`;
+
+            const apiKey = "AIzaSyAC-TUn9zoWih1XBnjK_xHiH7H3qW7Rrv0"; // A chave da API é gerenciada pelo ambiente de execução.
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: text }] }],
+                systemInstruction: {
+                    parts: [{ text: systemInstruction }]
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    console.error("Resposta de erro da API:", errorBody);
+                    throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const translatedText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!translatedText) {
+                    console.error("Estrutura da resposta da API inesperada:", JSON.stringify(result, null, 2));
+                    throw new Error("Não foi possível obter a tradução da resposta da API.");
+                }
+
+                return translatedText.trim();
+            } catch (error) {
+                console.error("Erro na tradução:", error);
+                showNotification("Ocorreu um erro ao traduzir. Por favor, tente novamente mais tarde.", true);
+                return "Erro na Tradução.";
+            }
+        }
+        async function handleTranslationRequest(inputId, sourceLang, targetLang, langCode, containerId, textId, loaderId) { 
+            if (isTranslating) return; 
+            isTranslating = true; 
+            const text = document.getElementById(inputId).value; 
+            await handleTranslation(text, sourceLang, targetLang, langCode, containerId, textId, loaderId); 
+            isTranslating = false; 
+        }
+
+        async function handleTranslation(text, sourceLang, targetLang, langCode, containerId, textId, loaderId) { 
+            if (!text.trim()) { 
+                showNotification('Por favor, digite um texto para traduzir.', true); 
+                return; 
+            } 
+            const outputContainer = document.getElementById(containerId); 
+            const outputTextElem = document.getElementById(textId); 
+            const loader = document.getElementById(loaderId); 
+            
+            // Define o botão de áudio correspondente
+            const speakBtnId = (textId === 'de-output-text') ? 'speak-de-btn' : 'speak-pt-btn';
+            const speakBtn = document.getElementById(speakBtnId);
+            
+            outputContainer.classList.remove('hidden'); 
+            outputTextElem.textContent = ''; 
+            speakBtn.classList.add('hidden'); // Esconde o botão durante o carregamento
+            loader.classList.remove('hidden'); 
+            
+            const translatedText = await getTranslation(text, sourceLang, targetLang); 
+            
+            loader.classList.add('hidden'); 
+            
+            // Atribui o texto e configura o botão de áudio
+            outputTextElem.textContent = translatedText;
+            speakBtn.onclick = () => speak(translatedText, langCode);
+            speakBtn.classList.remove('hidden');
+            
+            // Toca o áudio automaticamente
+            speak(translatedText, langCode, outputTextElem); 
+        }
+
+        function speak(text, lang, textElement) { 
+            if (!('speechSynthesis' in window)) { 
+                showNotification('Seu navegador não suporta a síntese de voz.', true); 
+                if(textElement) textElement.textContent = text; 
+                return; 
+            } 
+            window.speechSynthesis.cancel(); 
+            const utterance = new SpeechSynthesisUtterance(text); 
+            const voices = window.speechSynthesis.getVoices(); 
+            const specificVoice = voices.find(voice => voice.lang === lang); 
+            if (specificVoice) utterance.voice = specificVoice; 
+            utterance.lang = lang; 
+            
+            if (textElement && ['de-output-text', 'pt-output-text'].includes(textElement.id)) { 
+                const words = text.split(/\s+/); 
+                textElement.innerHTML = words.map(word => `<span>${word}</span>`).join(' '); 
+                const wordSpans = textElement.querySelectorAll('span'); 
+                let wordIndex = 0; 
+                utterance.onboundary = (event) => { 
+                    if (event.name === 'word') { 
+                        const highlighted = textElement.querySelector('.highlight-word'); 
+                        if (highlighted) highlighted.classList.remove('highlight-word'); 
+                        for (let i = wordIndex; i < wordSpans.length; i++) { 
+                            if (text.substring(event.charIndex).startsWith(wordSpans[i].textContent)) { 
+                                wordSpans[i].classList.add('highlight-word'); 
+                                wordIndex = i; 
+                                break; 
+                            } 
+                        } 
+                    } 
+                }; 
+                utterance.onend = () => { 
+                    const highlighted = textElement.querySelector('.highlight-word'); 
+                    if (highlighted) setTimeout(() => highlighted.classList.remove('highlight-word'), 500); 
+                }; 
+            } 
+            
+            if (window.speechSynthesis.getVoices().length === 0) { 
+                window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.speak(utterance); 
+            } else { 
+                window.speechSynthesis.speak(utterance); 
+            } 
+        }
+        
+        // --- LÓGICA DO DICIONÁRIO ---
+        function buildDictionary() { const container = document.getElementById('dict-container'); container.innerHTML = ''; for (const category in dictionary) { let categoryHtml = `<div class="dict-category"><h3 class="text-2xl font-bold text-yellow-400 mb-2 border-b border-gray-600 pb-1">${category}</h3><div class="space-y-2">`; dictionary[category].forEach(word => { categoryHtml += `<div class="dict-entry grid grid-cols-2 gap-4 items-center bg-gray-700 p-3 rounded-lg"><span class="dict-word-de text-lg font-bold cursor-pointer" onclick="speak('${word.de}', 'de-DE')">${word.de}</span><span class="dict-word-pt text-gray-300 text-right">${word.pt}</span></div>`; }); categoryHtml += '</div></div>'; container.innerHTML += categoryHtml; } }
+        function filterDictionary() { const filter = document.getElementById('dict-search').value.toLowerCase(); document.querySelectorAll('.dict-entry').forEach(el => { const de = el.querySelector('.dict-word-de').textContent.toLowerCase(); const pt = el.querySelector('.dict-word-pt').textContent.toLowerCase(); el.style.display = (de.includes(filter) || pt.includes(filter)) ? '' : 'none'; }); document.querySelectorAll('.dict-category').forEach(cat => { const isAnyVisible = Array.from(cat.querySelectorAll('.dict-entry')).some(e => e.style.display !== 'none'); cat.style.display = isAnyVisible ? '' : 'none'; }); }
+
+        // --- LÓGICA DO QUIZ RÁPIDO---
+        function disableQuizInputs() { document.querySelectorAll('.quiz-option, #dissertative-answer, #check-dissertative').forEach(el => { el.disabled = true; el.classList.add('opacity-50', 'cursor-not-allowed'); }); }
+        
+        function loadQuiz() { 
+            quickChallengeAttempts = 3;
+            const quizContainer = document.getElementById('quiz-container'); 
+            if(!quizContainer) return; 
+
+            const attemptsContainer = document.getElementById('quick-challenge-attempts');
+            if (attemptsContainer) {
+                attemptsContainer.textContent = `Tentativas restantes: ${quickChallengeAttempts}`;
+            }
+
+            const currentHour = new Date().getHours();
+            const quizList = quizzesByDifficulty[currentDifficulty];
+            const quiz = quizList[currentHour % quizList.length];
+            const feedbackContainer = document.getElementById('feedback-container');
+            feedbackContainer.innerHTML = '';
+            feedbackContainer.className = 'mt-4 p-3 text-center rounded-lg font-bold';
+            let content = `<h3 class="text-xl font-bold mb-4">${quiz.question}</h3>`;
+            if (quiz.options) {
+                content += '<div class="space-y-2">';
+                quiz.options.forEach(option => { content += `<button class="quiz-option w-full p-3 bg-gray-800 hover:bg-gray-900 rounded-lg text-left transition">${option}</button>`; });
+                content += '</div>';
+            } else {
+                content += `<input type="text" id="dissertative-answer" class="w-full p-3 bg-gray-900 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Sua resposta..."><button id="check-dissertative" class="mt-4 w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded-lg">Verificar</button>`;
+            }
+            quizContainer.innerHTML = content;
+            addQuizListeners(quiz); 
+        }
+
+        function addQuizListeners(quiz) { if (quiz.options) { document.querySelectorAll('.quiz-option').forEach(button => button.addEventListener('click', () => checkAnswer(button.textContent, quiz.answer))); } else { const input = document.getElementById('dissertative-answer'); const button = document.getElementById('check-dissertative'); if(button) button.addEventListener('click', () => checkAnswer(input.value, quiz.answer)); if(input) input.addEventListener('keyup', (e) => { if (e.key === 'Enter') checkAnswer(input.value, quiz.answer); }); } }
+        
+        function checkAnswer(userAnswer, correctAnswer) {
+            const feedbackContainer = document.getElementById('feedback-container');
+            const isCorrect = userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+            if (isCorrect) {
+                feedbackContainer.textContent = `Correto!`;
+                feedbackContainer.className = 'mt-4 p-3 text-center rounded-lg font-bold bg-green-600 text-white';
+                disableQuizInputs();
+            } else {
+                quickChallengeAttempts--;
+                const attemptsContainer = document.getElementById('quick-challenge-attempts');
+                if (attemptsContainer) {
+                    attemptsContainer.textContent = `Tentativas restantes: ${quickChallengeAttempts}`;
+                }
+
+                if (quickChallengeAttempts > 0) {
+                    feedbackContainer.textContent = `Incorreto. Tente novamente.`;
+                    feedbackContainer.className = 'mt-4 p-3 text-center rounded-lg font-bold bg-yellow-600 text-black';
+                } else {
+                    feedbackContainer.textContent = `Você não tem mais tentativas. A resposta certa é: ${correctAnswer}`;
+                    feedbackContainer.className = 'mt-4 p-3 text-center rounded-lg font-bold bg-red-600 text-white';
+                    disableQuizInputs();
+                }
+            }
+        }
+
+        // --- LÓGICA DAS PROVAS DIÁRIAS ---
+        function shuffleArray(array, seed) {
+            let currentIndex = array.length, temporaryValue, randomIndex;
+            const random = () => {
+                var x = Math.sin(seed++) * 10000;
+                return x - Math.floor(x);
+            };
+            while (0 !== currentIndex) {
+                randomIndex = Math.floor(random() * currentIndex);
+                currentIndex -= 1;
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+            return array;
+        }
+
+        function getDailyTestQuestions(topic, difficulty) {
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+            const questionPool = [...testsByTopic[topic][difficulty]];
+            const shuffledPool = shuffleArray(questionPool, dayOfYear);
+            return shuffledPool.slice(0, 10);
+        }
+
+        function loadTestSelection() {
+            const container = document.getElementById('test-selection-grid');
+            if (!container) return;
+            container.innerHTML = '';
+            const testTopics = { artigos: { title: 'Artigos', color: 'yellow' }, conjugacao: { title: 'Conjugação Verbal', color: 'red' }, vocabulario: { title: 'Vocabulário', color: 'blue' }, historia: { title: 'História', color: 'green' } };
+
+            for (const topic in testTopics) {
+                const info = testTopics[topic];
+                const card = document.createElement('div');
+                card.className = 'bg-gray-700 p-6 rounded-lg';
+                let buttonsHTML = '';
+                ['facil', 'medio', 'dificil'].forEach(difficulty => {
+                    const color = difficulty === 'facil' ? 'green' : difficulty === 'medio' ? 'yellow' : 'red';
+                    buttonsHTML += `<button class="w-full bg-${color}-600 hover:bg-${color}-700 text-white font-bold py-2 px-4 rounded-lg" onclick="startTest('${topic}', '${difficulty}')">
+                                        ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                                    </button>`;
+                });
+                card.innerHTML = `
+                    <h3 class="text-2xl font-bold text-${info.color}-400 mb-4">${info.title}</h3>
+                    <div class="flex flex-col space-y-2">${buttonsHTML}</div>
+                `;
+                container.appendChild(card);
+            }
+        }
+        
+        function startTest(topic, difficulty) {
+            document.getElementById('test-selection-container').classList.add('hidden');
+            const container = document.getElementById('active-test-container');
+            container.classList.remove('hidden');
+            const questions = getDailyTestQuestions(topic, difficulty);
+            
+            container.dataset.topic = topic;
+            container.dataset.difficulty = difficulty;
+            
+            let questionsHTML = `<h2 class="text-3xl font-bold mb-4 text-center">Prova de ${topic.charAt(0).toUpperCase() + topic.slice(1)} <span class="text-yellow-400">(${difficulty})</span></h2>`;
+            questionsHTML += '<div id="test-questions" class="space-y-6">';
+
+            questions.forEach((q, index) => {
+                const shuffledOptions = shuffleArray([...q.options], index + 1); // Add seed offset
+                questionsHTML += `<div class="bg-gray-900 p-4 rounded-lg">
+                    <p class="font-bold mb-3">${index + 1}. ${q.question}</p>
+                    <div class="space-y-2">`;
+                shuffledOptions.forEach((option, optionIndex) => {
+                    questionsHTML += `<div>
+                        <input type="radio" id="q${index}_opt${optionIndex}" name="question_${index}" value="${option}" class="mr-2 accent-yellow-400">
+                        <label for="q${index}_opt${optionIndex}">${option}</label>
+                    </div>`;
+                });
+                questionsHTML += `</div></div>`;
+            });
+
+            questionsHTML += '</div>';
+            questionsHTML += `<div class="mt-8 flex justify-between items-center">
+                                <button class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg" onclick="changePage('provas')">Voltar</button>
+                                <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg" onclick="finishTest()">Finalizar Prova</button>
+                              </div>`;
+            container.innerHTML = questionsHTML;
+            container.dataset.questions = JSON.stringify(questions);
+        }
+
+        function finishTest() {
+            const container = document.getElementById('active-test-container');
+            const questions = JSON.parse(container.dataset.questions);
+            const topic = container.dataset.topic;
+            const difficulty = container.dataset.difficulty;
+            
+            let score = 0;
+            const userAnswers = [];
+
+            questions.forEach((q, index) => {
+                const selectedOption = document.querySelector(`input[name="question_${index}"]:checked`);
+                const userAnswer = selectedOption ? selectedOption.value : null;
+                userAnswers.push(userAnswer);
+                if (userAnswer === q.answer) {
+                    score++;
+                }
+            });
+
+            let resultsHTML = `<h2 class="text-3xl font-bold mb-2 text-center">Resultado da Prova</h2>
+                               <p class="text-center text-2xl font-bold mb-6 ${score > 6 ? 'text-green-400' : 'text-red-400'}">Você acertou ${score} de ${questions.length}!</p>
+                               <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">`;
+
+            questions.forEach((q, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === q.answer;
+                const resultClass = isCorrect ? 'test-question-correct' : 'test-question-incorrect';
+                const originalQuestionData = testsByTopic[topic][difficulty].find(qs => qs.question === q.question);
+
+                resultsHTML += `<div class="bg-gray-900 p-4 rounded-lg ${resultClass}">
+                                <p class="font-bold mb-2">${index + 1}. ${q.question}</p>`;
+
+                originalQuestionData.options.forEach(option => {
+                    let optionStyle = 'text-gray-300';
+                    let icon = '•';
+                    if (option === q.answer) {
+                        optionStyle = 'text-green-400 font-bold';
+                        icon = '✔';
+                    }
+                    if (option === userAnswer && !isCorrect) {
+                        optionStyle = 'text-red-400 line-through';
+                        icon = '✖';
+                    }
+                     resultsHTML += `<p class="${optionStyle}">${icon} ${option}</p>`;
+                });
+                resultsHTML += `</div>`;
+            });
+            
+            resultsHTML += `</div>`;
+            resultsHTML += `<div class="mt-8 flex justify-between items-center">
+                                <button class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg" onclick="changePage('provas')">Voltar</button>
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg" onclick="startTest('${topic}', '${difficulty}')">Tentar Novamente</button>
+                           </div>`;
+
+            container.innerHTML = resultsHTML;
+        }
+
+    </script>
+</body>
+</html>
